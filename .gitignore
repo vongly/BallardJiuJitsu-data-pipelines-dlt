@@ -1,10 +1,13 @@
+venv/
+.env
+
+.dlt/*
+!.dlt/config.toml
+
 .DS_Store
 *__pycache__/
 *.py[cod]
 *.so
-
-venv/
-.env
 
 *.log
 *.sqlite
@@ -13,8 +16,4 @@ venv/
 *.parquet
 *.jsonl
 *.json
-
 *.gz
-
-.dlt/*
-!.dlt/config.toml
