@@ -25,13 +25,3 @@ SQLITE_LOCATION_IP = os.environ['SQLITE_LOCATION_IP']
 SQLITE_LOCATION_USER = os.environ['SQLITE_LOCATION_USER']
 SQLITE_LOCATION_USER = os.environ['SQLITE_LOCATION_USER']
 SQLITE_LOCATION_FILEPATH = os.environ['SQLITE_LOCATION_FILEPATH']
-
-def get_local_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        s.connect(('8.8.8.8', 80))
-        return s.getsockname()[0]
-    finally:
-        s.close()
-
-PUBLIC_IP = requests.get('https://api.ipify.org').text
