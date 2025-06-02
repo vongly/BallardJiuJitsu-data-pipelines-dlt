@@ -16,4 +16,5 @@ venv/
 
 *.gz
 
-.dlt/
+.dlt/*
+!.dlt/config.toml
