@@ -1,8 +1,6 @@
 from google.oauth2 import service_account
 import os
 from pathlib import Path
-import socket
-import requests
 from dotenv import load_dotenv
 
 env_path = Path(__file__).resolve().parents[0] / '.env'
