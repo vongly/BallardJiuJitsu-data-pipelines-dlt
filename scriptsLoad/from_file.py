@@ -7,6 +7,7 @@ from pathlib import Path
 import time
 
 DATASET_TABLES_STRIPE = {
+    'pipeline': 'stripe_to_file',
     'dataset': 'stripe',
     'tables': [
         {'table': 'stripe_charges_incremental_id'},
@@ -16,6 +17,7 @@ DATASET_TABLES_STRIPE = {
     ]
 }
 DATASET_TABLES_SQLITE = {
+    'pipeline': 'sqlite_to_file',
     'dataset': 'sqlite',
     'tables': [
         {'table': 'sqlite_users_incremental_updated_at'},
@@ -35,13 +37,14 @@ def move_processed_file(source, destination):
 # Identifies the filepaths of extracted data files
     ### need to sync/generalize file structure
 def find_files_for_dataset_tables(dataset_tables, extract_filepath):
+    pipeline = dataset_tables['pipeline']
     dataset = dataset_tables['dataset']
     for table in dataset_tables['tables'][:]:
         table_name = table['table']
 
-        FILE_DIR_PATH_STR = f'{ extract_filepath }/{ dataset }/{ table_name }'
+        FILE_DIR_PATH_STR = f'{ extract_filepath }/{ pipeline }/{ dataset }/{ table_name }'
         FILE_DIR_PATH = Path(FILE_DIR_PATH_STR)
-        print(FILE_DIR_PATH_STR)
+
         if not FILE_DIR_PATH.exists():
             dataset_tables['tables'].remove(table)
             continue

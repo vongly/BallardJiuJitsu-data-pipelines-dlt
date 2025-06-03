@@ -19,7 +19,7 @@ from env import (
     PIPELINES_DIR,
     EXTRACT_FILEPATH,
 )
-from utils import print_pipeline_details
+from utils.helpers import print_pipeline_details
 
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = BQ_SERVICE_ACCOUNT_JSON_PATH
 
@@ -36,14 +36,15 @@ def pipeline(dataset_tables):
     dataset_tables_w_file_details = find_files_for_dataset_tables(dataset_tables=dataset_tables, extract_filepath=EXTRACT_FILEPATH)
 
     print_pipeline_details(pipeline_object)
+
     if dataset_tables_w_file_details['tables'] == []:
-        print('\n', f' No new files to process - { dataset }', '\n')
+        print(f'\n  No new files to process - { dataset }', '\n')
     else:
         for table_w_file_details in dataset_tables_w_file_details['tables']:
             filepath = table_w_file_details['filepath']
             file_directory = table_w_file_details['file_directory']
             processed_directory = f'{ file_directory }/processed'
-            print('\n',' Processing:', filepath)
+            print('\n  Processing:', filepath)
 
             new_resource = make_file_resource(table_w_file_details=table_w_file_details)
             load_info = pipeline_object.run(new_resource)

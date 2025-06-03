@@ -23,3 +23,10 @@ SQLITE_LOCATION_IP = os.environ['SQLITE_LOCATION_IP']
 SQLITE_LOCATION_USER = os.environ['SQLITE_LOCATION_USER']
 SQLITE_LOCATION_USER = os.environ['SQLITE_LOCATION_USER']
 SQLITE_LOCATION_FILEPATH = os.environ['SQLITE_LOCATION_FILEPATH']
+
+
+if __name__ == '__main__':
+    print('\n')
+    for var_name, value in list(locals().items()):
+        print(f"{var_name} = {value}")
+    print('\n')

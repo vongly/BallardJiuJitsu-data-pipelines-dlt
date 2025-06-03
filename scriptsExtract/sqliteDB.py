@@ -21,7 +21,7 @@ from env import (
     PROJECT_DIRECTORY,
 )
 
-SQLITE_TABLES_INCREMENTAL_UPDATED_AT = [
+SQLITE_DATA_SOURCES_INCREMENTAL_UPDATED_AT = [
     'users',
     'kids',
     'class_times',
@@ -59,19 +59,20 @@ def copy_sqlite_db():
     return db_path
 
 
-def query_sqlite_table(db_path, table, incremental_updated_at=None, where_clause = None):
+def query_sqlite_incremental_updated_at(db_path, data_source, incremental_value=None, where_clause = None):
     start = time.time()
-    print(f'  Processing - { table }')
+    print(f'  Processing - { data_source }')
+
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     where_clause = '' if where_clause == None else where_clause
 
-    if incremental_updated_at:
-        if incremental_updated_at.last_value:
-            where_clause = f''' WHERE updated_at > '{ incremental_updated_at.last_value }' '''
+    if incremental_value:
+        if incremental_value.last_value:
+            where_clause = f''' WHERE updated_at > '{ incremental_value.last_value }' '''
 
-    cursor.execute(f'SELECT * FROM { table } { where_clause }')
+    cursor.execute(f'SELECT * FROM { data_source } { where_clause }')
     columns = [ col[0] for col in cursor.description ]
 
     count = 0
@@ -81,21 +82,23 @@ def query_sqlite_table(db_path, table, incremental_updated_at=None, where_clause
 
     conn.close()
     end = time.time()
-    print(f'  Record Count: { table } -', count, f'({end - start:.1f}s)')
+    print(f'  Record Count: { data_source } -', count, f'({end - start:.1f}s)')
 
-def create_sqliteDB_resource_incremental_updated(db_path, table):
-    resource_name = f'sqlite_{ table }_incremental_updated_at'
-    @dlt.resource(name=resource_name, write_disposition='append')
-    def create_resource(incremental_updated_at=incremental('updated_at', initial_value=None)):
-        yield query_sqlite_table(db_path, table, incremental_updated_at)
+def create_sqliteDB_resource_incremental_updated_at(**kwargs):
+    db_path = kwargs['db_path']
+    data_source = kwargs['data_source']
+    resource_name = f'sqlite_{ data_source }_incremental_updated_at'
+    @dlt.resource(name=resource_name, write_disposition='append', primary_key="id")
+    def create_resource(incremental_value=incremental('updated_at', initial_value=None)):
+        yield query_sqlite_incremental_updated_at(db_path, data_source, incremental_value)
     return create_resource
 
 if __name__ == '__main__':
     db_path = copy_sqlite_db
 
-    records = query_sqlite_table(
+    records = query_sqlite_incremental_updated_at(
         db_path = db_path,
-        table='users',
+        data_source='users',
         incremental_updated_at=None,
     )
 

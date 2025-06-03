@@ -19,7 +19,7 @@ client = RESTClient(
     auth=BearerTokenAuth(token=STRIPE_API_SECRET),
 )
 
-STRIPE_ENDPOINTS_INCREMENTAL_ID = [
+STRIPE_DATA_SOURCES_INCREMENTAL_CREATED = [
     'refunds',
     'customers',
     'charges',
@@ -27,16 +27,19 @@ STRIPE_ENDPOINTS_INCREMENTAL_ID = [
 ]
 
 # Loads records from stripe API endpoint -> incremental value keys off of 'id'
-def query_stripe_endpoint_incremental_id(endpoint, incremental_id=None, params=None):
+def query_stripe_incremental_created(data_source, incremental_obj=None):
     start = time.time()
-    print(f'  Processing - { endpoint }')
-    params = params={'limit': 100} if params == None else params
-    if incremental_id:
-        if incremental_id.last_value:
-            params['starting_after'] = incremental_id.last_value
+    print(f'  Processing - { data_source }')
+
+    params = {'limit': 100}
+
+    if incremental_obj:
+        if incremental_obj.last_value:
+            params["created[gte]"] = incremental_obj.last_value
+
     count = 0
     while True:
-        response = client.get(endpoint, params=params)
+        response = client.get(data_source, params=params)
         if response.status_code != 200:
             print(f' Request failed: { response.status_code }, { response.text }')
 
@@ -55,20 +58,12 @@ def query_stripe_endpoint_incremental_id(endpoint, incremental_id=None, params=N
         time.sleep(0.1)
 
     end = time.time()
-    print(f'  Record Count: { endpoint } -', count, f'({end - start:.1f}s)')
+    print(f'  Record Count: { data_source } -', count, f'({end - start:.1f}s)')
 
-def create_stripe_resource_incremental_id(endpoint):
-    resource_name = f'stripe_{ endpoint }_incremental_id'
-    @dlt.resource(name=resource_name, write_disposition='append')
-    def created_resource(incremental_id=incremental('id', initial_value=None)):
-        yield from query_stripe_endpoint_incremental_id(endpoint, incremental_id)
-    return created_resource
-
-if __name__ == '__main__':
-    records = query_stripe_endpoint_incremental_id(
-        endpoint = 'refunds',
-        incremental_id=None,
-    )
-
-    for r in records:
-        print(r)
+def create_stripe_resource_incremental_created(**kwargs):
+    data_source = kwargs['data_source']
+    resource_name = f'stripe_{ data_source }_incremental_id'
+    @dlt.resource(name=resource_name, write_disposition='append', primary_key="id")
+    def created_resource(incremental_obj=incremental('created', initial_value=None)):
+        yield from query_stripe_incremental_created(data_source, incremental_obj)
+    return created_resource()

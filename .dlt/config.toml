@@ -1,5 +1,5 @@
-["stripe_to_file.destination.filesystem"]
-bucket_url = "file:.dlt/extract_files/stripe_extract_files"
+[stripe_to_file.destination.filesystem]
+bucket_url = "file:.dlt/extract_files/stripe_to_file"
 
-["sqlite_to_file.destination.filesystem"]
-bucket_url = "file:.dlt/extract_files/sqlite_extract_files"
+[sqlite_to_file.destination.filesystem]
+bucket_url = "file:.dlt/extract_files/sqlite_to_file"
