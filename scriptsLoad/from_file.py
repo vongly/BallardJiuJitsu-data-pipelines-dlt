@@ -10,10 +10,10 @@ DATASET_TABLES_STRIPE = {
     'pipeline': 'stripe_to_file',
     'dataset': 'stripe',
     'tables': [
-        {'table': 'stripe_charges_incremental_id'},
-        {'table': 'stripe_customers_incremental_id'},
-        {'table': 'stripe_invoices_incremental_id'},
-        {'table': 'stripe_refunds_incremental_id'},
+        {'table': 'stripe_charges_incremental_created'},
+        {'table': 'stripe_customers_incremental_created'},
+        {'table': 'stripe_invoices_incremental_created'},
+        {'table': 'stripe_refunds_incremental_created'},
     ]
 }
 DATASET_TABLES_SQLITE = {

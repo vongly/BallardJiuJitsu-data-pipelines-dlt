@@ -62,7 +62,7 @@ def query_stripe_incremental_created(data_source, incremental_obj=None):
 
 def create_stripe_resource_incremental_created(**kwargs):
     data_source = kwargs['data_source']
-    resource_name = f'stripe_{ data_source }_incremental_id'
+    resource_name = f'stripe_{ data_source }_incremental_created'
     @dlt.resource(name=resource_name, write_disposition='append', primary_key="id")
     def created_resource(incremental_obj=incremental('created', initial_value=None)):
         yield from query_stripe_incremental_created(data_source, incremental_obj)

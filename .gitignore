@@ -17,3 +17,6 @@ venv/
 *.jsonl
 *.json
 *.gz
+
+
+scriptsExtract/test.py

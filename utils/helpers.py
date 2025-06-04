@@ -17,7 +17,7 @@ def print_pipeline_details(pipeline):
     dataset = pipeline.dataset_name
     working_dir = pipeline.pipelines_dir
 
-    print('\n', ' Pipeline -')
+    print('\n', ' RUNNING NEW PIPELINE -')
     print('  Name:', pipeline_name)
     if destination == 'filesystem':
         print('  Destination:', EXTRACT_FILEPATH)
