@@ -20,9 +20,9 @@ client = RESTClient(
 )
 
 # Loads records from stripe API endpoint -> incremental value keys off of 'id'
-def query_stripe_incremental_created(data_source, incremental_obj=None):
+def query_stripe_incremental_created(resource_name, data_source, incremental_obj=None):
     start = time.time()
-    print(f'  Processing - { data_source }')
+    print(f'  Processing - { resource_name }')
 
     params = {'limit': 100}
 
@@ -51,12 +51,16 @@ def query_stripe_incremental_created(data_source, incremental_obj=None):
         time.sleep(0.1)
 
     end = time.time()
-    print(f'  Record Count: { data_source } -', count, f'({end - start:.1f}s)')
+    print(f'  Record Count - { resource_name }:', count, f'({end - start:.1f}s)')
 
-def create_stripe_resource_incremental_created(**kwargs):
-    data_source = kwargs['data_source']
-    resource_name = f'stripe_{ data_source }_incremental_created'
-    @dlt.resource(name=resource_name, write_disposition='append', primary_key="id")
+def create_stripe_resource_incremental_created(resource_details):
+    pipeline_name = resource_details['pipeline_name']
+    data_source = resource_details['data_source']
+
+    table_name = f'stripe_{ data_source }_incremental_created'
+    resource_name = f'{ pipeline_name }__{ table_name }'
+
+    @dlt.resource(name=resource_name, table_name=table_name, write_disposition='append', primary_key="id")
     def created_resource(incremental_obj=incremental('created', initial_value=None)):
-        yield from query_stripe_incremental_created(data_source, incremental_obj)
+        yield from query_stripe_incremental_created(resource_name, data_source, incremental_obj)
     return created_resource()

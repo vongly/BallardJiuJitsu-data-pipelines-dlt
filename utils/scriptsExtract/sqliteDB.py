@@ -52,9 +52,9 @@ def copy_sqlite_db():
     return db_path
 
 
-def query_sqlite_incremental_updated_at(db_path, data_source, incremental_value=None, where_clause = None):
+def query_sqlite_incremental_updated_at(resource_name, data_source, db_path, incremental_value=None, where_clause = None):
     start = time.time()
-    print(f'  Processing - { data_source }')
+    print(f'  Processing - { resource_name }')
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -75,13 +75,20 @@ def query_sqlite_incremental_updated_at(db_path, data_source, incremental_value=
 
     conn.close()
     end = time.time()
-    print(f'  Record Count: { data_source } -', count, f'({end - start:.1f}s)')
+    print(f'  Record Count - { resource_name }:', count, f'({end - start:.1f}s)')
 
-def create_sqliteDB_resource_incremental_updated_at(**kwargs):
-    db_path = kwargs['db_path']
-    data_source = kwargs['data_source']
-    resource_name = f'sqlite_{ data_source }_incremental_updated_at'
-    @dlt.resource(name=resource_name, write_disposition='append', primary_key="id")
+def create_sqliteDB_resource_incremental_updated_at(resource_details):
+    pipeline_name = resource_details['pipeline_name']
+    data_source = resource_details['data_source']
+    db_path = resource_details['db_path']
+
+    table_name = f'sqlite_{ data_source }_incremental_updated_at'
+    resource_name = f'{ pipeline_name }__{ table_name }'
+
+    @dlt.resource(name=resource_name, table_name=table_name, write_disposition='append', primary_key=None)
     def create_resource(incremental_value=incremental('updated_at', initial_value=None)):
-        yield query_sqlite_incremental_updated_at(db_path, data_source, incremental_value)
-    return create_resource
+        '''
+            primary_key=None -> to record history of slow changing fields
+        '''
+        yield query_sqlite_incremental_updated_at(resource_name, data_source, db_path, incremental_value)
+    return create_resource()

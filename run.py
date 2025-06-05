@@ -6,8 +6,10 @@ from pipelines import (
     file_to_bq,
 )
 
+import time
+
 if __name__ == '__main__':
-    
+
     # Stripe
     stripe_to_file.run_stripe_to_file_pipeline()
 
@@ -15,7 +17,7 @@ if __name__ == '__main__':
     sqlite_to_file.run_sqlite_to_file_pipeline()
 
     # File to BQ
-    file_to_bq.run_file_to_bq_pipeline
-
+    file_to_bq.run_stripe_file_to_bq_pipeline()
+    file_to_bq.run_sqlite_file_to_bq_pipeline()
 
     pretty_all_jsons()

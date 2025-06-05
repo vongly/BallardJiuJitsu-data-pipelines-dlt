@@ -1,117 +1,72 @@
 import dlt
 
-import gzip, json
-import shutil
-import hashlib
+import sys
 from pathlib import Path
+import gzip, json
 import time
 
+parent_dir = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(parent_dir))
 
-# Moves processed file after pipeline is ran
-def move_processed_file(source, destination):
-    output_dir = Path(destination)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    shutil.move(source, destination)
+from helpers import get_file_type_from_dir
+
 
 # Identifies the filepaths of extracted data files
     ### need to sync/generalize file structure
-def find_files_for_dataset_tables(dataset_tables, extract_filepath):
-    pipeline = dataset_tables['pipeline']
-    dataset = dataset_tables['dataset']
-    for table in dataset_tables['tables'][:]:
-        table_name = table['table']
+def find_pipeline_data_source_file_details(pipeline_details, extract_dir):
+    extract_pipeline = pipeline_details['extract_pipeline_name']
+    dataset = pipeline_details['dataset']
+    extract_dir = Path(extract_dir)
 
-        FILE_DIR_PATH_STR = f'{ extract_filepath }/{ pipeline }/{ dataset }/{ table_name }'
-        FILE_DIR_PATH = Path(FILE_DIR_PATH_STR)
+    for data_source in pipeline_details['data_sources'][:]:
+        data_source_name = data_source['data_source']
 
-        if not FILE_DIR_PATH.exists():
-            dataset_tables['tables'].remove(table)
+        DATA_SOURCE_DIR = extract_dir / extract_pipeline / dataset / data_source_name
+        print(str(DATA_SOURCE_DIR))
+
+        if not DATA_SOURCE_DIR.exists():
+            pipeline_details['data_sources'].remove(data_source)
             continue
 
-        filenames = [ f.name for f in FILE_DIR_PATH.iterdir() if f.suffix == '.jsonl' ]
+        has_jsonl_files = list(DATA_SOURCE_DIR.glob("*.jsonl"))
 
-        if filenames == []:
-            dataset_tables['tables'].remove(table)
+        if not has_jsonl_files:
+            pipeline_details['data_sources'].remove(data_source)
             continue
 
-        for filename in filenames:
-            ABS_FILEPATH = f'{ FILE_DIR_PATH }/{ filename }'
+        data_source['data_source_dir'] = DATA_SOURCE_DIR
 
-            table['file_directory'] = FILE_DIR_PATH_STR
-            table['filename'] = filename
-            table['filepath'] = ABS_FILEPATH
-                    
-    return dataset_tables
+    return pipeline_details
 
-# Loads records gzip jsonl file for each file -> file format from dlt
-def load_jsonl_gzip(table_w_file_details):
+
+# Loads all gzip jsonl file for one dataset/table
+def load_jsonl_gzip(directory):
     start = time.time()
-    table = table_w_file_details['table']
-    filename = table_w_file_details['filename']
-    filepath = table_w_file_details['filepath']
 
+    files = get_file_type_from_dir(directory,'jsonl')
     count = 0
-    with gzip.open(filepath, 'rt', encoding='utf-8') as f:
-        for line in f:
-            count += 1
-            record = json.loads(line)
-            record["_source_file"] = filename
-            yield record
+    for file in files:
+        with gzip.open(str(file), 'rt', encoding='utf-8') as f:
+            for line in f:
+                count += 1
+                record = json.loads(line)
+                record["_source_file"] = file.name
+                yield record
+
     end = time.time()
-    print(f' Record Count: { table } -', count, f'({end - start:.1f}s)')
+    print(f'  Record Count -', count, f'({end - start:.1f}s)')
 
-# Generic resource generator
-# creates a different resource for each file regardless of source
-def create_file_resource(table_w_file_details):
-    filename = table_w_file_details['filename']
-    table = table_w_file_details['table']
-    suffix = hashlib.md5(str(filename).encode()).hexdigest()[:8] # suffix for resource name
-    resource_name = f'{ table }_{ suffix }'
+# Generates a resource from file
+# creates one resource for one source
+def create_file_resource(resource_details):
+    pipeline_name = resource_details['pipeline_name']
+    data_source = resource_details['data_source']
+    data_source_dir = resource_details['data_source_dir']
 
-    @dlt.resource(name=resource_name, table_name=table, write_disposition='append')
+    table_name = f'sqlite_{ data_source }_incremental_updated_at'
+    resource_name = f'{ pipeline_name }__{ table_name }'
+    @dlt.resource(name=resource_name, table_name=table_name, write_disposition='append')
     def created_resource():
-        yield from load_jsonl_gzip(table_w_file_details=table_w_file_details)
+        yield from load_jsonl_gzip(directory=data_source_dir)
 
     return created_resource
-
-if __name__ == '__main__':
-    import sys
-    from pathlib import Path
-
-    parent_dir = Path(__file__).resolve().parents[1]
-    sys.path.insert(0, str(parent_dir))
-
-    from env import EXTRACT_FILEPATH
-
-    dataset_tables_stripe = {
-        'dataset': 'stripe',
-        'tables': [
-            {'table': 'stripe_refunds_incremental_id'},
-        ]
-    }
-    dataset_tables_sqlite = {
-        'dataset': 'sqlite',
-        'tables': [
-            {'table': 'sqlite_users_incremental_updated_at'},
-        ]
-    }
-
-    datasets_tables = [dataset_tables_stripe, dataset_tables_sqlite]
-
-    for dataset_tables in datasets_tables:
-        dataset = dataset_tables['dataset']
-        dataset_tables_w_file_details = find_files_for_dataset_tables(dataset_tables=dataset_tables, extract_filepath=EXTRACT_FILEPATH)
-
-        if dataset_tables_w_file_details['tables'] == []:
-            print('\n', f' No new files to process - { dataset }', '\n')
-        else:
-            for table_w_file_details in dataset_tables_w_file_details['tables']:
-                filepath = table_w_file_details['filepath']
-                file_directory = table_w_file_details['file_directory']
-                processed_directory = f'{ file_directory }/processed'
-                print('\n',' Processing:', filepath)
-
-        
-                records = load_jsonl_gzip(table_w_file_details=table_w_file_details)
-                for r in records:
-                    print(r)
