@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 import time
 
-parent_dir = Path(__file__).resolve().parents[1]
+parent_dir = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(parent_dir))
 
 from env import (
@@ -21,13 +21,6 @@ from env import (
     PROJECT_DIRECTORY,
 )
 
-SQLITE_DATA_SOURCES_INCREMENTAL_UPDATED_AT = [
-    'users',
-    'kids',
-    'class_times',
-    'class_time_checkins',
-    'kids_class_time_checkins',
-]
 
 def create_ssh_client():
     PRIVATE_KEY = paramiko.Ed25519Key.from_private_key_file(SSH_KEY_PATH_FOR_SQLITE)
@@ -92,15 +85,3 @@ def create_sqliteDB_resource_incremental_updated_at(**kwargs):
     def create_resource(incremental_value=incremental('updated_at', initial_value=None)):
         yield query_sqlite_incremental_updated_at(db_path, data_source, incremental_value)
     return create_resource
-
-if __name__ == '__main__':
-    db_path = copy_sqlite_db
-
-    records = query_sqlite_incremental_updated_at(
-        db_path = db_path,
-        data_source='users',
-        incremental_updated_at=None,
-    )
-
-    for r in records:
-        print(r)

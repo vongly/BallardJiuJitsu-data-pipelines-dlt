@@ -26,7 +26,6 @@ SQLITE_LOCATION_FILEPATH = os.environ['SQLITE_LOCATION_FILEPATH']
 
 
 if __name__ == '__main__':
-    print('\n')
     for var_name, value in list(locals().items()):
         print(f"{var_name} = {value}")
     print('\n')

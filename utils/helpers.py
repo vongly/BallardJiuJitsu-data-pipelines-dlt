@@ -26,8 +26,6 @@ def print_pipeline_details(pipeline):
     print('  Dataset:', dataset)
     print('  Working dir:', working_dir, '\n')
 
-
-
 def pretty_print_json_file(input_path, output_path):
     try:
         with open(input_path, 'r') as infile:

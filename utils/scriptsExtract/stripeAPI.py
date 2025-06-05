@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 import time
 
-parent_dir = Path(__file__).resolve().parents[1]
+parent_dir = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(parent_dir))
 
 from env import STRIPE_API_SECRET
@@ -18,13 +18,6 @@ client = RESTClient(
     base_url=BASE_URL,
     auth=BearerTokenAuth(token=STRIPE_API_SECRET),
 )
-
-STRIPE_DATA_SOURCES_INCREMENTAL_CREATED = [
-    'refunds',
-    'customers',
-    'charges',
-    'invoices',
-]
 
 # Loads records from stripe API endpoint -> incremental value keys off of 'id'
 def query_stripe_incremental_created(data_source, incremental_obj=None):

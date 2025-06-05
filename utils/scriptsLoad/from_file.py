@@ -6,27 +6,6 @@ import hashlib
 from pathlib import Path
 import time
 
-DATASET_TABLES_STRIPE = {
-    'pipeline': 'stripe_to_file',
-    'dataset': 'stripe',
-    'tables': [
-        {'table': 'stripe_charges_incremental_created'},
-        {'table': 'stripe_customers_incremental_created'},
-        {'table': 'stripe_invoices_incremental_created'},
-        {'table': 'stripe_refunds_incremental_created'},
-    ]
-}
-DATASET_TABLES_SQLITE = {
-    'pipeline': 'sqlite_to_file',
-    'dataset': 'sqlite',
-    'tables': [
-        {'table': 'sqlite_users_incremental_updated_at'},
-        {'table': 'sqlite_kids_incremental_updated_at'},
-        {'table': 'sqlite_class_times_incremental_updated_at'},
-        {'table': 'sqlite_class_time_checkins_incremental_updated_at'},
-        {'table': 'sqlite_kids_class_time_checkins_incremental_updated_at'},
-    ]
-}
 
 # Moves processed file after pipeline is ran
 def move_processed_file(source, destination):
@@ -83,7 +62,7 @@ def load_jsonl_gzip(table_w_file_details):
 
 # Generic resource generator
 # creates a different resource for each file regardless of source
-def make_file_resource(table_w_file_details):
+def create_file_resource(table_w_file_details):
     filename = table_w_file_details['filename']
     table = table_w_file_details['table']
     suffix = hashlib.md5(str(filename).encode()).hexdigest()[:8] # suffix for resource name

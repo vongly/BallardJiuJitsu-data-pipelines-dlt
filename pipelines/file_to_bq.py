@@ -1,5 +1,3 @@
-import dlt
-
 import os
 import sys
 from pathlib import Path
@@ -7,57 +5,49 @@ from pathlib import Path
 parent_dir = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(parent_dir))
 
-from scriptsLoad.from_file import (
-    make_file_resource,
-    move_processed_file,
-    find_files_for_dataset_tables,
-    DATASET_TABLES_STRIPE,
-    DATASET_TABLES_SQLITE,
-)
-from env import (
-    BQ_SERVICE_ACCOUNT_JSON_PATH,
-    PIPELINES_DIR,
-    EXTRACT_FILEPATH,
-)
-from utils.helpers import print_pipeline_details
+from core.pipeline_file_to_destination import create_file_to_destination_pipeline
+from utils.scriptsLoad.from_file import create_file_resource
+from env import BQ_SERVICE_ACCOUNT_JSON_PATH
 
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = BQ_SERVICE_ACCOUNT_JSON_PATH
 
-def pipeline(dataset_tables):
-    dataset = dataset_tables['dataset']
 
-    pipeline_object = dlt.pipeline(
-        pipeline_name=f'{ dataset }_file_to_bq',
-        destination='bigquery',
-        dataset_name=dataset,
-        pipelines_dir=PIPELINES_DIR,
-    )
+def run_file_to_bq_pipeline():
 
-    dataset_tables_w_file_details = find_files_for_dataset_tables(dataset_tables=dataset_tables, extract_filepath=EXTRACT_FILEPATH)
+    DATASET_TABLES_SQLITE = {
+        'pipeline': 'sqlite_to_file',
+        'dataset': 'sqlite',
+        'tables': [
+            {'table': 'sqlite_users_incremental_updated_at'},
+            {'table': 'sqlite_kids_incremental_updated_at'},
+            {'table': 'sqlite_class_times_incremental_updated_at'},
+            {'table': 'sqlite_class_time_checkins_incremental_updated_at'},
+            {'table': 'sqlite_kids_class_time_checkins_incremental_updated_at'},
+        ]
+    }
+    DATASET_TABLES_STRIPE = {
+        'pipeline': 'stripe_to_file',
+        'dataset': 'stripe',
+        'tables': [
+            {'table': 'stripe_charges_incremental_created'},
+            {'table': 'stripe_customers_incremental_created'},
+            {'table': 'stripe_invoices_incremental_created'},
+            {'table': 'stripe_refunds_incremental_created'},
+        ]
+    }
 
-    print_pipeline_details(pipeline_object)
+    datasets_tables_files_to_bq = [DATASET_TABLES_SQLITE, DATASET_TABLES_STRIPE]
 
-    if dataset_tables_w_file_details['tables'] == []:
-        print(f'\n  No new files to process - { dataset }', '\n')
-    else:
-        for table_w_file_details in dataset_tables_w_file_details['tables']:
-            filepath = table_w_file_details['filepath']
-            file_directory = table_w_file_details['file_directory']
-            processed_directory = f'{ file_directory }/processed'
-            print('\n  Processing:', filepath)
-
-            new_resource = make_file_resource(table_w_file_details=table_w_file_details)
-            load_info = pipeline_object.run(new_resource)
-
-            if load_info.load_packages and all(pkg.state == "loaded" for pkg in load_info.load_packages):
-                move_processed_file(filepath, processed_directory)
-                print('  Finished loading - file moved to processed: ', processed_directory, '\n')
-            else:
-                print(f' Failed to load: { filepath } — skipping move.', '\n')
-
+    for dataset_tables in datasets_tables_files_to_bq:
+        dataset = dataset_tables['dataset']
+        name = f'{ dataset }_file_to_bq'
+        
+        create_file_to_destination_pipeline(
+            name=name,
+            destination='bigquery',
+            create_resource_function=create_file_resource,
+            dataset_tables=dataset_tables,
+        )
 
 if __name__ == '__main__':
-    datasets_tables = [DATASET_TABLES_STRIPE,DATASET_TABLES_SQLITE]
-
-    for dataset_tables in datasets_tables:
-        pipeline(dataset_tables=dataset_tables)
+    run_file_to_bq_pipeline()
