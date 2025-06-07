@@ -66,14 +66,17 @@ def make_list_if_not(my_list):
 def create_resource_details_w_kwargs(kwargs_input,excluded_args=['data_sources'],**kwargs):
 
     excluded_args = make_list_if_not(excluded_args)
+    for arg in excluded_args:
+        kwargs_input.pop(arg, None)
 
     resource_details = {}
 
     for key, value in kwargs.items():
-        resource_details[key] = value    
-    for key, value in kwargs_input.items():
-        if key not in excluded_args:
-            resource_details[key] = value    
+        resource_details[key] = value
+    if kwargs_input:
+        for key, value in kwargs_input.items():
+            if key not in excluded_args:
+                resource_details[key] = value    
 
     return resource_details
 
