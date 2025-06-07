@@ -13,7 +13,12 @@ from env import (
     PIPELINES_DIR,
     EXTRACT_DIR,
 )
-from utils.helpers import print_pipeline_details
+from utils.helpers import (
+    print_pipeline_details,
+    create_resource_details_w_kwargs,
+    make_list_if_not,
+    make_dictionary,
+)
 
 
 class CreateFileToDistinationPipeline:
@@ -43,41 +48,37 @@ class CreateFileToDistinationPipeline:
         )
 
         self.kwargs = kwargs
-        data_sources = self.kwargs.get('data_sources', [])
-        if not isinstance(data_sources, list):
-            data_sources = [data_sources]
+        data_sources = make_list_if_not(kwargs.get('data_sources', []))
         data_sources = [{'data_source': data_source} for data_source in data_sources ]
  
-        self.pipeline_details = {}
-        self.pipeline_details['pipeline_name'] = pipeline_name
-        self.pipeline_details['extract_pipeline_name'] = extract_pipeline_name
-        self.pipeline_details['dataset'] = dataset
-        self.pipeline_details['data_sources'] = data_sources
+        self.pipeline_details = make_dictionary(
+            pipeline_name=pipeline_name,
+            extract_pipeline_name=extract_pipeline_name,
+            dataset=dataset,
+            data_sources=data_sources,
+        )
 
         self.pipeline_details_w_file_details = find_pipeline_data_source_file_details(pipeline_details=self.pipeline_details, extract_dir=EXTRACT_DIR)
         '''
            find_pipeline_data_source_file_details() -> determines location of data files
-           - based off of
-                - config.toml
-                - files must have the same base directory
-                - env.EXTRACT_DIR must be pointed to base directory of config.toml
+            - uses env.EXTRACT_DIR and destination variable
         '''
 
     def run_pipelines(self):
         print_pipeline_details(self.pipeline_object)
         if self.pipeline_details_w_file_details['data_sources'] != []:
             for data_source_w_file_details in self.pipeline_details_w_file_details['data_sources']:
+
                 data_source = data_source_w_file_details['data_source']
                 data_source_dir = data_source_w_file_details['data_source_dir']
 
-                resource_details = {}
-                resource_details['pipeline_name'] = self.pipeline_name
-                resource_details['extact_pipeline_name'] = self.pipeline_name
-                resource_details['data_source'] = data_source
-                resource_details['data_source_dir'] = data_source_dir
-                for key, value in self.kwargs.items():
-                    if key not in ['data_sources']:
-                        resource_details[key] = value
+                resource_details = create_resource_details_w_kwargs(
+                    kwargs_input=self.kwargs,
+                    pipeline_name=self.pipeline_name,
+                    pipeline_name=self.pipeline_name,
+                    data_source=data_source,
+                    data_source_dir=data_source_dir
+                )
 
                 print('\n  Processing:', data_source_dir)
 

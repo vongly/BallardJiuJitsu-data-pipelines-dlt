@@ -19,9 +19,9 @@ def run_stripe_to_file_pipeline():
         'invoices',
     ]
 
-    pipeline_name='stripe_to_file'
-    destination=f'{ EXTRACT_DIR }/{ pipeline_name }'
-    dataset='stripe'
+    pipeline_name = 'stripe_to_file'
+    destination = f'{ EXTRACT_DIR }/{ pipeline_name }'
+    dataset = 'stripe'
 
     pipeline = CreateDataSourceToFilePipeline(
         pipeline_name=pipeline_name,

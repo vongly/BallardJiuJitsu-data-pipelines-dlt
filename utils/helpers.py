@@ -58,5 +58,27 @@ def pretty_all_jsons(base_dir=PROJECT_DIRECTORY):
                 output_path = os.path.join(root, file)
                 pretty_print_json_file(input_path, output_path)
 
+def make_list_if_not(my_list):
+    if not isinstance(my_list, list):
+        my_list = [my_list]
+    return my_list
+
+def create_resource_details_w_kwargs(kwargs_input,excluded_args=['data_sources'],**kwargs):
+
+    excluded_args = make_list_if_not(excluded_args)
+
+    resource_details = {}
+
+    for key, value in kwargs.items():
+        resource_details[key] = value    
+    for key, value in kwargs_input.items():
+        if key not in excluded_args:
+            resource_details[key] = value    
+
+    return resource_details
+
+def make_dictionary(**kwargs):
+    return kwargs
+
 if __name__ == "__main__":
     pretty_all_jsons()

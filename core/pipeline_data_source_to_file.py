@@ -7,7 +7,11 @@ parent_dir = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(parent_dir))
 
 from env import PIPELINES_DIR, EXTRACT_DIR
-from utils.helpers import print_pipeline_details
+from utils.helpers import (
+    print_pipeline_details,
+    create_resource_details_w_kwargs,
+    make_list_if_not,
+)
 
 
 class CreateDataSourceToFilePipeline:
@@ -33,19 +37,16 @@ class CreateDataSourceToFilePipeline:
             pipelines_dir=self.pipelines_dir,
         )
 
-        data_sources = kwargs.get('data_sources', [])
-        if not isinstance(data_sources, list):
-            data_sources = [data_sources]
+        data_sources = make_list_if_not(kwargs.get('data_sources', []))
  
         self.resources_details = []
         for data_source in data_sources:
-            resource_details_item = {}
-            resource_details_item['data_source'] = data_source
-            resource_details_item['pipeline_name'] = pipeline_name
-            for key, value in kwargs.items():
-                if key not in ['data_sources']:
-                    resource_details_item[key] = value
-            self.resources_details.append(resource_details_item)
+            resource_details = create_resource_details_w_kwargs(
+                kwargs_input=self.kwargs,
+                pipeline_name=self.pipeline_name,
+                data_source=data_source,
+            )
+            self.resources_details.append(resource_details)
 
     def run_pipeline(self):
         print_pipeline_details(self.pipeline_object)
