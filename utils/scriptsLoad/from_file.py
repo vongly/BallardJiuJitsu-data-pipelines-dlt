@@ -22,7 +22,6 @@ def find_pipeline_data_source_file_details(pipeline_details, extract_dir):
         data_source_name = data_source['data_source']
 
         DATA_SOURCE_DIR = extract_dir / extract_pipeline / dataset / data_source_name
-        print(str(DATA_SOURCE_DIR))
 
         if not DATA_SOURCE_DIR.exists():
             pipeline_details['data_sources'].remove(data_source)
@@ -50,7 +49,7 @@ def load_jsonl_gzip(directory):
             for line in f:
                 count += 1
                 record = json.loads(line)
-                record["_source_file"] = file.name
+                record['_source_file'] = file.name
                 yield record
 
     end = time.time()
@@ -63,7 +62,7 @@ def create_file_resource(resource_details):
     data_source = resource_details['data_source']
     data_source_dir = resource_details['data_source_dir']
 
-    table_name = f'sqlite_{ data_source }_incremental_updated_at'
+    table_name = f'{ data_source }_incremental_updated_at'
     resource_name = f'{ pipeline_name }__{ table_name }'
     @dlt.resource(name=resource_name, table_name=table_name, write_disposition='append')
     def created_resource():

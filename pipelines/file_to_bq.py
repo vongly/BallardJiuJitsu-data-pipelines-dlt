@@ -63,7 +63,9 @@ def run_sqlite_file_to_bq_pipeline():
 
     pipeline.run_all()
 
-
-if __name__ == '__main__':
+def run_file_to_bq_pipeline():
     run_stripe_file_to_bq_pipeline()
     run_sqlite_file_to_bq_pipeline()
+
+if __name__ == '__main__':
+    run_file_to_bq_pipeline()

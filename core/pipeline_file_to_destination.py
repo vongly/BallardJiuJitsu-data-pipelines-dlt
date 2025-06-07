@@ -42,8 +42,8 @@ class CreateFileToDistinationPipeline:
             pipelines_dir=self.pipelines_dir,
         )
 
-
-        data_sources = kwargs.get('data_sources', [])
+        self.kwargs = kwargs
+        data_sources = self.kwargs.get('data_sources', [])
         if not isinstance(data_sources, list):
             data_sources = [data_sources]
         data_sources = [{'data_source': data_source} for data_source in data_sources ]
@@ -75,6 +75,9 @@ class CreateFileToDistinationPipeline:
                 resource_details['extact_pipeline_name'] = self.pipeline_name
                 resource_details['data_source'] = data_source
                 resource_details['data_source_dir'] = data_source_dir
+                for key, value in self.kwargs.items():
+                    if key not in ['data_sources']:
+                        resource_details[key] = value
 
                 print('\n  Processing:', data_source_dir)
 
