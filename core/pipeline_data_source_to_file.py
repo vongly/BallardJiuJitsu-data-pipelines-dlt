@@ -37,6 +37,7 @@ class CreateDataSourceToFilePipeline:
             pipelines_dir=self.pipelines_dir,
         )
 
+        self.kwargs = kwargs
         data_sources = make_list_if_not(kwargs.get('data_sources', []))
  
         self.resources_details = []

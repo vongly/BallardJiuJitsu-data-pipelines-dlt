@@ -52,7 +52,7 @@ def copy_sqlite_db():
     return db_path
 
 
-def query_sqlite_incremental_updated_at(resource_name, data_source, db_path, incremental_value=None, where_clause = None):
+def query_sqlite_incremental_updated_at(resource_name, data_source, db_path, incremental_value=None, where_clause=None):
     start = time.time()
     print(f'  Processing - { resource_name }')
 
@@ -82,7 +82,7 @@ def create_sqliteDB_resource_incremental_updated_at(resource_details):
     data_source = resource_details['data_source']
     db_path = resource_details['db_path']
 
-    table_name = f'sqlite_{ data_source }_incremental_updated_at'
+    table_name = f'sqlite_{ data_source }__incremental_updated_at'
     resource_name = f'{ pipeline_name }__{ table_name }'
 
     @dlt.resource(name=resource_name, table_name=table_name, write_disposition='append', primary_key=None)

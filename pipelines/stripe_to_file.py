@@ -1,5 +1,3 @@
-import dlt
-
 import sys
 from pathlib import Path
 

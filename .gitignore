@@ -17,3 +17,5 @@ venv/
 *.jsonl
 *.json
 *.gz
+
+test*

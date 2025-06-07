@@ -17,6 +17,8 @@ def run_stripe_file_to_bq_pipeline():
         'stripe_charges_incremental_created',
         'stripe_customers_incremental_created',
         'stripe_invoices_incremental_created',
+        'stripe_invoices_incremental_created__lines__data',
+        'stripe_invoices_incremental_created__lines__data__discount_amounts',
         'stripe_refunds_incremental_created',
     ]
 

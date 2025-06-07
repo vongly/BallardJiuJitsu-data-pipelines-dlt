@@ -75,7 +75,6 @@ class CreateFileToDistinationPipeline:
                 resource_details = create_resource_details_w_kwargs(
                     kwargs_input=self.kwargs,
                     pipeline_name=self.pipeline_name,
-                    pipeline_name=self.pipeline_name,
                     data_source=data_source,
                     data_source_dir=data_source_dir
                 )

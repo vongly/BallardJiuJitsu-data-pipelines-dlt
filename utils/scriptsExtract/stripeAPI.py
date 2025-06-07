@@ -1,7 +1,6 @@
 import dlt
 from dlt.sources import incremental
-from dlt.sources.helpers.rest_client import RESTClient
-from dlt.sources.helpers.rest_client.auth import BearerTokenAuth
+import requests
 
 import sys
 from pathlib import Path
@@ -14,25 +13,24 @@ from env import STRIPE_API_SECRET
 
 BASE_URL = 'https://api.stripe.com/v1'
 
-client = RESTClient(
-    base_url=BASE_URL,
-    auth=BearerTokenAuth(token=STRIPE_API_SECRET),
-)
-
-# Loads records from stripe API endpoint -> incremental value keys off of 'id'
+# Loads records from stripe API endpoint -> incremental value keys off of 'created'
 def query_stripe_incremental_created(resource_name, data_source, incremental_obj=None):
     start = time.time()
     print(f'  Processing - { resource_name }')
+
+    headers = {
+        'Authorization': f'Bearer { STRIPE_API_SECRET }'
+    }
 
     params = {'limit': 100}
 
     if incremental_obj:
         if incremental_obj.last_value:
-            params["created[gte]"] = incremental_obj.last_value
+            params['created[gte]'] = incremental_obj.last_value
 
     count = 0
     while True:
-        response = client.get(data_source, params=params)
+        response = requests.get(data_source, headers=headers, params=params)
         if response.status_code != 200:
             print(f' Request failed: { response.status_code }, { response.text }')
 
@@ -57,10 +55,10 @@ def create_stripe_resource_incremental_created(resource_details):
     pipeline_name = resource_details['pipeline_name']
     data_source = resource_details['data_source']
 
-    table_name = f'stripe_{ data_source }_incremental_created'
+    table_name = f'stripe_{ data_source }__incremental_created'
     resource_name = f'{ pipeline_name }__{ table_name }'
 
-    @dlt.resource(name=resource_name, table_name=table_name, write_disposition='append', primary_key="id")
+    @dlt.resource(name=resource_name, table_name=table_name, write_disposition='append', primary_key='id')
     def created_resource(incremental_obj=incremental('created', initial_value=None)):
         yield from query_stripe_incremental_created(resource_name, data_source, incremental_obj)
     return created_resource()
