@@ -14,18 +14,17 @@ class CreateDataSourceToFilePipeline:
     def __init__(
             self,
             pipeline_name: str,
-            destination: str,
+            destination: object,
             dataset: str,
             create_resource_function: callable,
             pipelines_dir=PIPELINES_DIR,
             **kwargs,
         ):
         self.pipeline_name = pipeline_name
-        self.destination = destination
+        self.destination = dlt.destinations.filesystem(bucket_url=destination)
         self.dataset = dataset
         self.create_resource_function = create_resource_function
         self.pipelines_dir = pipelines_dir
-
 
         self.pipeline_object = dlt.pipeline(
             pipeline_name=self.pipeline_name,
@@ -50,9 +49,14 @@ class CreateDataSourceToFilePipeline:
 
     def run_pipeline(self):
         print_pipeline_details(self.pipeline_object)
-        resources = [
-            self.create_resource_function(details) for details in self.resources_details
-        ]
+
+        resources = []
+
+        for details in self.resources_details:
+            resource = self.create_resource_function(details)
+            resource.buffer_max_items = 1000
+            resources.append(resource)
+
         load_info = self.pipeline_object.run(resources)
         print('\n', load_info)
 

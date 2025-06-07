@@ -19,12 +19,13 @@ def run_stripe_to_file_pipeline():
         'invoices',
     ]
 
-    pipeline_name='stripe_to_file',
-    dataset='stripe',
+    pipeline_name='stripe_to_file'
+    destination=f'{ EXTRACT_DIR }/{ pipeline_name }'
+    dataset='stripe'
 
     pipeline = CreateDataSourceToFilePipeline(
         pipeline_name=pipeline_name,
-        destination=dlt.destinations.filesystem(bucket_url=f'{ EXTRACT_DIR }/{ pipeline_name }'),
+        destination=destination,
         dataset=dataset,
         create_resource_function=create_stripe_resource_incremental_created,
         data_sources=STRIPE_DATA_SOURCES_INCREMENTAL_CREATED,

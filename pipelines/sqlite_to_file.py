@@ -1,4 +1,4 @@
-import dlt.destinations as filesystem_destination
+import dlt
 
 import sys
 from pathlib import Path
@@ -13,8 +13,8 @@ from utils.scriptsExtract.sqliteDB import (
 )
 from env import EXTRACT_DIR
 
-def run_sqlite_to_file_pipeline():
 
+def run_sqlite_to_file_pipeline():
 
     SQLITE_DATA_SOURCES_INCREMENTAL_UPDATED_AT = [
         'users',
@@ -26,11 +26,12 @@ def run_sqlite_to_file_pipeline():
 
     db_path = copy_sqlite_db()
     pipeline_name = 'sqlite_to_file'
-    dataset='sqlite'
+    destination = f'{ EXTRACT_DIR }/{ pipeline_name }'
+    dataset ='sqlite'
 
     pipeline = CreateDataSourceToFilePipeline(
         pipeline_name=pipeline_name,
-        destination=filesystem_destination.filesystem(bucket_url=f'{ EXTRACT_DIR }/{ pipeline_name }'),
+        destination=destination,
         dataset=dataset,
         create_resource_function=create_sqliteDB_resource_incremental_updated_at,
         data_sources=SQLITE_DATA_SOURCES_INCREMENTAL_UPDATED_AT,
