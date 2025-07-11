@@ -18,6 +18,7 @@ def query_stripe_incremental_created(resource_name, data_source, incremental_obj
     start = time.time()
     print(f'  Processing - { resource_name }')
 
+    url = f'{ BASE_URL }/{ data_source }'
     headers = {
         'Authorization': f'Bearer { STRIPE_API_SECRET }'
     }
@@ -30,7 +31,7 @@ def query_stripe_incremental_created(resource_name, data_source, incremental_obj
 
     count = 0
     while True:
-        response = requests.get(data_source, headers=headers, params=params)
+        response = requests.get(url, headers=headers, params=params)
         if response.status_code != 200:
             print(f' Request failed: { response.status_code }, { response.text }')
 
