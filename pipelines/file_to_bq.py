@@ -14,12 +14,12 @@ os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = BQ_SERVICE_ACCOUNT_JSON_PATH
 def run_stripe_file_to_bq_pipeline():
 
     DATA_SOURCES_STRIPE = [
-        'stripe_charges_incremental_created',
-        'stripe_customers_incremental_created',
-        'stripe_invoices_incremental_created',
-        'stripe_invoices_incremental_created__lines__data',
-        'stripe_invoices_incremental_created__lines__data__discount_amounts',
-        'stripe_refunds_incremental_created',
+        'stripe_charges__incremental_created',
+        'stripe_customers__incremental_created',
+        'stripe_invoices__incremental_created',
+        'stripe_invoices__incremental_created__lines__data',
+        'stripe_invoices__incremental_created__lines__data__discount_amounts',
+        'stripe_refunds__incremental_created',
     ]
 
 
@@ -38,15 +38,16 @@ def run_stripe_file_to_bq_pipeline():
     )
 
     pipeline.run_all()
+    return pipeline
 
 def run_sqlite_file_to_bq_pipeline():
 
     DATA_SOURCES_SQLITE = [
-        'sqlite_users_incremental_updated_at',
-        'sqlite_kids_incremental_updated_at',
-        'sqlite_class_times_incremental_updated_at',
-        'sqlite_class_time_checkins_incremental_updated_at',
-        'sqlite_kids_class_time_checkins_incremental_updated_at',
+        'sqlite_users__incremental_updated_at',
+        'sqlite_kids__incremental_updated_at',
+        'sqlite_class_times__incremental_updated_at',
+        'sqlite_class_time_checkins__incremental_updated_at',
+        'sqlite_kids_class_time_checkins__incremental_updated_at',
     ]
 
     pipeline_name = 'sqlite_file_to_bq'
@@ -64,10 +65,18 @@ def run_sqlite_file_to_bq_pipeline():
     )
 
     pipeline.run_all()
+    return pipeline
 
 def run_file_to_bq_pipeline():
-    run_stripe_file_to_bq_pipeline()
-    run_sqlite_file_to_bq_pipeline()
+    pipeline_stripe = run_stripe_file_to_bq_pipeline()
+    print(pipeline_stripe.jobs_json)
 
+    pipeline_sqlite = run_sqlite_file_to_bq_pipeline()
+    print(pipeline_sqlite.jobs_json)
+
+    return {
+        'stripe': pipeline_stripe,
+        'sqlite': pipeline_sqlite,
+    }
 if __name__ == '__main__':
-    run_file_to_bq_pipeline()
+    pipeline = run_file_to_bq_pipeline()

@@ -8,7 +8,6 @@ import sqlite3
 import os
 import sys
 from pathlib import Path
-import time
 
 parent_dir = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(parent_dir))
@@ -53,9 +52,6 @@ def copy_sqlite_db():
 
 
 def query_sqlite_incremental_updated_at(resource_name, data_source, db_path, incremental_value=None, where_clause=None):
-    start = time.time()
-    print(f'  Processing - { resource_name }')
-
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -74,8 +70,6 @@ def query_sqlite_incremental_updated_at(resource_name, data_source, db_path, inc
         yield dict(zip(columns, row))
 
     conn.close()
-    end = time.time()
-    print(f'  Record Count - { resource_name }:', count, f'({end - start:.1f}s)')
 
 def create_sqliteDB_resource_incremental_updated_at(resource_details):
     pipeline_name = resource_details['pipeline_name']

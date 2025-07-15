@@ -15,9 +15,6 @@ BASE_URL = 'https://api.stripe.com/v1'
 
 # Loads records from stripe API endpoint -> incremental value keys off of 'created'
 def query_stripe_incremental_created(resource_name, data_source, incremental_obj=None):
-    start = time.time()
-    print(f'  Processing - { resource_name }')
-
     url = f'{ BASE_URL }/{ data_source }'
     headers = {
         'Authorization': f'Bearer { STRIPE_API_SECRET }'
@@ -48,9 +45,6 @@ def query_stripe_incremental_created(resource_name, data_source, incremental_obj
 
         params['starting_after'] = data[-1]['id']
         time.sleep(0.1)
-
-    end = time.time()
-    print(f'  Record Count - { resource_name }:', count, f'({end - start:.1f}s)')
 
 def create_stripe_resource_incremental_created(resource_details):
     pipeline_name = resource_details['pipeline_name']

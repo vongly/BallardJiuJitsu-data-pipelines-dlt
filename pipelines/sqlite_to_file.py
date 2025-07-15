@@ -37,8 +37,8 @@ def run_sqlite_to_file_pipeline():
     )
 
     pipeline.run_all()
-
     return pipeline
 
 if __name__ == '__main__':
-    run_sqlite_to_file_pipeline()
+    pipeline = run_sqlite_to_file_pipeline()
+    print(pipeline.jobs_json)
