@@ -16,6 +16,7 @@ venv/
 *.parquet
 *.jsonl
 *.json
+*.crt
 *.gz
 
 test*

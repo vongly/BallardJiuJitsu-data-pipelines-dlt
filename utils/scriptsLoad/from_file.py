@@ -3,7 +3,6 @@ import dlt
 import sys
 from pathlib import Path
 import gzip, json
-import time
 
 parent_dir = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(parent_dir))
@@ -40,8 +39,6 @@ def find_pipeline_data_source_file_details(pipeline_details, extract_dir):
 
 # Loads all gzip jsonl file for one dataset/table
 def load_jsonl_gzip(directory):
-    start = time.time()
-
     files = get_file_type_from_dir(directory,'jsonl')
     count = 0
     for file in files:
@@ -52,8 +49,6 @@ def load_jsonl_gzip(directory):
                 record['_source_file'] = file.name
                 yield record
 
-    end = time.time()
-    print(f'  Record Count -', count, f'({end - start:.1f}s)')
 
 # Generates a resource from file
 # creates one resource for one source

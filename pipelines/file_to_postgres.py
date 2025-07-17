@@ -7,9 +7,22 @@ sys.path.insert(0, str(parent_dir))
 
 from core.pipeline_file_to_destination import CreateFileToDistinationPipeline
 from utils.scriptsLoad.from_file import create_file_resource
-from env import BQ_SERVICE_ACCOUNT_JSON_PATH
+from env import (
+    POSTGRES_USER,
+    POSTGRES_PASSWORD,
+    POSTGRES_HOST,
+    POSTGRES_PORT,
+    POSTGRES_DB,
+    POSTGRES_CERTIFICATION_PATH
+)
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = BQ_SERVICE_ACCOUNT_JSON_PATH
+os.environ['DESTINATION__POSTGRES__CREDENTIALS__HOST'] = POSTGRES_HOST
+os.environ['DESTINATION__POSTGRES__CREDENTIALS__PORT'] = POSTGRES_PORT
+os.environ['DESTINATION__POSTGRES__CREDENTIALS__USERNAME'] = POSTGRES_USER
+os.environ['DESTINATION__POSTGRES__CREDENTIALS__PASSWORD'] = POSTGRES_PASSWORD
+os.environ['DESTINATION__POSTGRES__CREDENTIALS__DATABASE'] = POSTGRES_DB
+os.environ['DESTINATION__POSTGRES__CREDENTIALS__SSLMODE'] = 'verify-full'
+os.environ['DESTINATION__POSTGRES__CREDENTIALS__SSLROOTCERT'] = POSTGRES_CERTIFICATION_PATH
 
 def run_stripe_file_to_bq_pipeline():
 
@@ -22,8 +35,8 @@ def run_stripe_file_to_bq_pipeline():
         'stripe_refunds__incremental_created',
     ]
 
-    pipeline_name = 'stripe_file_to_bq'
-    destination = 'bigquery'
+    pipeline_name = 'stripe_file_to_postgres'
+    destination = 'postgres'
     dataset = 'stripe'
     extract_pipeline_name='stripe_to_file'
 
@@ -49,8 +62,8 @@ def run_sqlite_file_to_bq_pipeline():
         'sqlite_kids_class_time_checkins__incremental_updated_at',
     ]
 
-    pipeline_name = 'sqlite_file_to_bq'
-    destination = 'bigquery'
+    pipeline_name = 'sqlite_file_to_postgres'
+    destination = 'postgres'
     dataset = 'sqlite'
     extract_pipeline_name='sqlite_to_file'
     
@@ -66,7 +79,7 @@ def run_sqlite_file_to_bq_pipeline():
     pipeline.run_all()
     return pipeline
 
-def run_file_to_bq_pipeline():
+def run_file_to_postgress_pipeline():
     pipeline_stripe = run_stripe_file_to_bq_pipeline()
     print(pipeline_stripe.jobs_json)
 
@@ -78,4 +91,4 @@ def run_file_to_bq_pipeline():
         'sqlite': pipeline_sqlite,
     }
 if __name__ == '__main__':
-    pipeline = run_file_to_bq_pipeline()
+    pipeline = run_file_to_postgress_pipeline()

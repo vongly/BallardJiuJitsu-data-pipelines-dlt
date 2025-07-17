@@ -82,8 +82,6 @@ class CreateFileToDistinationPipeline:
                     data_source_dir=data_source_dir
                 )
 
-                print('\n  Processing:', data_source_dir)
-
                 new_resource = self.create_resource_function(resource_details)
                 load_info = self.pipeline_object.run(new_resource)
                 load_packages = load_info.load_packages
@@ -103,21 +101,28 @@ class CreateFileToDistinationPipeline:
                         with gzip.open(job.file_path, 'rt', encoding='utf-8') as f:
                             job_details['records'] = sum(1 for _ in f)
                         jobs.append(job_details)
-                        
+
                 '''
                     Moves files to a processed folder after they've been loaded
                 '''
                 if load_packages and all(pkg.state == 'loaded' for pkg in load_info.load_packages):
+                    '''
+                        success - move file to processed folder
+                    '''
                     processed_directory = data_source_dir / 'processed'
                     files = get_file_type_from_dir(data_source_dir,'jsonl')
                     for file in files:
                         move_file(file, processed_directory)
-                    print('  Finished loading - file moved to processed: ', processed_directory, '\n')
                 else:
-                    filepath = str(file)
-                    print(f' Failed to load: { filepath } — skipping move.', '\n')
+                    '''
+                        no load package - nothing was loaded
+                    '''
+                    pass
         else:
-            print(f'\n  No new files to process - { self.dataset }', '\n')
+            '''
+                no files to process
+            '''
+            pass
 
         self.jobs = sorted(jobs, key=lambda x: x['table'])
         self.jobs_json = json.dumps(self.jobs, indent=2)
